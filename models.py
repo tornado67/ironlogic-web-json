@@ -30,8 +30,9 @@ class Controller(db.Model):
     active = db.Column(db.Integer)
     mode = db.Column(db.Integer)
     last_conn = db.Column(db.Integer)
-    interval = db.Column(db.Integer,nullable=False ,default=10)
     license = db.Column(db.String())
+    interval = db.Column(db.Integer,nullable=False ,default=10)
+
     
 
     def __init__(self, serial, type, fw,conn_fw,active,mode, last_conn,interval, license):
@@ -54,7 +55,7 @@ class Event (db.Model):
     id = db.Column(db.Integer, primary_key=True)
     time  = db.Column(db.Integer, nullable=False )
     event = db.Column(db.Integer,nullable=False )
-    card =   db.Column(db.String, nullable=False)
+    card =   db.Column(db.Text, nullable=False)
     flags = db.Column(db.Integer)
 
     def __init__(self, card, flags, tz):
@@ -70,8 +71,8 @@ class Task (db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     serial  = db.Column(db.Integer)
-    type = db.Column(db.Integer)
-    json =   db.Column(db.String)
+    type = db.Column(db.Text)
+    json =   db.Column(db.Text)
 
     def __init__(self, card, flags, tz):
         self.card = card
