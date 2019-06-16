@@ -2,3 +2,4 @@
 *.crt
 *.pem
 *.sql*
+.env
