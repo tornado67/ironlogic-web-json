@@ -1,5 +1,6 @@
 import os
 import time
+import json
 from flask import Flask
 from flask import request
 from flask import jsonify
@@ -56,7 +57,7 @@ def main():
         raise  BadRequest('Malformed json', status_code=400)
     sn = jsn.get('sn')
     type = jsn.get('type')
-    controller = db.session.query(Controller).filter(Controller.serial==sn, Controller.type==type).all()[0]
+    ctrl = db.session.query(Controller).filter(Controller.serial==sn, Controller.type==type).all()[0]
     
     for msg_json in jsn['messages']:
         operation = msg_json.get('operation')
@@ -133,7 +134,7 @@ def main():
         else:
             print('UNKNOWN OERATION')
     
-    for task_jsn in db.session.query(Task,json).filter(Task.serial==sn, Task.type==type):
+    for task_jsn in db.session.query(Task.json).filter(Task.serial==sn, Task.type==type):
         if (len(json.dumps(answer))+len(task_jsn['json'])) > 1500:
             break
         task = json.loads(task_jsn['json'])
@@ -141,7 +142,7 @@ def main():
         answer.append(task)
             
     db.session.close()
-    answer = '{"date":"%s","interval":%d,"messages":%s}' % (time.strftime("%Y-%m-%d %H:%M:%S"),ctrl.get('interval'),json.dumps(answer))
+    answer = '{"date":"%s","interval":%d,"messages":%s}' % (time.strftime("%Y-%m-%d %H:%M:%S"),ctrl.interval, json.dumps(answer))
     return jsonify(answer)
 
         
