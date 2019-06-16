@@ -1,5 +1,5 @@
 from httpd2 import db
-from sqlalchemy.dialects.postgresql import JSON
+#from sqlalchemy.dialects.postgresql import JSON
 
 
 class Card(db.Model):
@@ -56,6 +56,22 @@ class Event (db.Model):
     event = db.Column(db.Integer,nullable=False )
     card =   db.Column(db.String, nullable=False)
     flags = db.Column(db.Integer)
+
+    def __init__(self, card, flags, tz):
+        self.card = card
+        self.flags = flags
+        self.tz = tz
+
+    def __repr__(self):
+        return '<id {}>'.format(self.id)
+
+class Task (db.Model):
+    __tablename__ = 'tasks'
+
+    id = db.Column(db.Integer, primary_key=True)
+    serial  = db.Column(db.Integer)
+    type = db.Column(db.Integer)
+    json =   db.Column(db.String)
 
     def __init__(self, card, flags, tz):
         self.card = card

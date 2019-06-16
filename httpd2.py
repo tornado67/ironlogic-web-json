@@ -5,6 +5,7 @@ from flask import jsonify
 from flask_sqlalchemy import SQLAlchemy
 
 
+
 MAX_CONTENT_LEN=2000
 
 app = Flask(__name__)
@@ -15,6 +16,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 
+from models import *
 
 class BadRequest(Exception):
     status_code = 400
