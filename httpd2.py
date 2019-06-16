@@ -57,7 +57,7 @@ def main():
         raise  BadRequest('Malformed json', status_code=400)
     sn = jsn.get('sn')
     type = jsn.get('type')
-    ctrl = db.session.query(Controller).filter(Controller.serial==sn, Controller.type==type).all()[0]
+    ctrl = db.session.query(Controller).filter(Controller.serial==sn, Controller.type==type).first()
     
     for msg_json in jsn['messages']:
         operation = msg_json.get('operation')
@@ -82,10 +82,10 @@ def main():
                 controller = Controller(serial=sn,type=type, fw=fw, conn_fw=conn_fw,active=mode, last_conn=int(time.time())  )
                 db.session.add(controller)
                 db.session.commit()
-                ctrl =  db.session.query(Controller).filter(Controller.serial==sn, Controller.type==type).all()[0]
+                ctrl =  db.session.query(Controller).filter(Controller.serial==sn, Controller.type==type).first()
 
             else:
-                controller = db.session.query.filter(Controller.serial==sn, Controller.type==type).all().first()
+                controller = db.session.query.filter(Controller.serial==sn, Controller.type==type).first()
                 controller.fw = fw
                 controller.conn_fw = conn_fw
                 controller.mode = mode
@@ -100,12 +100,12 @@ def main():
             print("PING FROM CONTROLLER %d" % sn )
             active = msg_json.get('active')
             mode = msg_json.get('mode')
-            controller = db.session.query(Controller).filter(Controller.serial==sn, Controller.type==type).all().first()
+            controller = db.session.query(Controller).filter(Controller.serial==sn, Controller.type==type).first()
             controller.mode = mode
             controller.last_conn = int(time.time())
             db.session.commit()  
            
-            if active != ctrl.get('active'):
+            if active != ctrl.active:
                 answer.append(json.loads('{"id":0,"operation":"set_active","active": %d}' % ctrl.get('active')))
                   
         elif operation == "check_access":
