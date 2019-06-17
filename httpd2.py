@@ -9,18 +9,12 @@ from flask import jsonify
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import sessionmaker
 
-
-
-
 MAX_CONTENT_LEN=2000
 
 app = Flask(__name__)
-
-
 app.config.from_object(os.environ['APP_SETTINGS'])
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
-
 
 from models import *
 
@@ -142,9 +136,6 @@ def main():
     answer = '{"date":"%s","interval":%d,"messages":%s}' % (time.strftime("%Y-%m-%d %H:%M:%S"),ctrl.interval, json.dumps(answer))        
     db.session.close()
     return jsonify(answer)
-
-        
-
 
 if __name__ == '__main__':
     app.run()
