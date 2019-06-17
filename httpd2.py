@@ -119,7 +119,6 @@ def main():
             answer.append(json.loads('{"id":%d,"operation":"check_access","granted":%d}' % (req_id,granted)))
 
         elif operation == "events":
-    
             print("EVENTS FROM CONTROLLER %d" % sn )
             event_cnt = 0
             for event in  msg_json.get('events'):
@@ -134,16 +133,14 @@ def main():
 
         else:
             print('UNKNOWN OERATION')
-    
     for task_jsn in db.session.query(Task.json).filter(Task.serial==sn, Task.type==type):
         if (len(json.dumps(answer))+len(task_jsn['json'])) > 1500:
             break
         task = json.loads(task_jsn['json'])
         task['id'] = task_jsn['id']
         answer.append(task)
-            
+    answer = '{"date":"%s","interval":%d,"messages":%s}' % (time.strftime("%Y-%m-%d %H:%M:%S"),ctrl.interval, json.dumps(answer))        
     db.session.close()
-    answer = '{"date":"%s","interval":%d,"messages":%s}' % (time.strftime("%Y-%m-%d %H:%M:%S"),ctrl.interval, json.dumps(answer))
     return jsonify(answer)
 
         
