@@ -58,10 +58,11 @@ class Event (db.Model):
     card =   db.Column(db.Text, nullable=False)
     flags = db.Column(db.Integer)
 
-    def __init__(self, card, flags, tz):
+    def __init__(self, card, flags, time, event):
         self.card = card
         self.flags = flags
-        self.tz = tz
+        self.time = time
+        self.event =  event
 
     def __repr__(self):
         return '<id {}>'.format(self.id)

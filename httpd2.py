@@ -1,24 +1,20 @@
 import os
 import time
 import json
+import datetime 
+
 from flask import Flask
 from flask import request
 from flask import jsonify
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import sessionmaker
 
-
-
-
 MAX_CONTENT_LEN=2000
 
 app = Flask(__name__)
-
-
 app.config.from_object(os.environ['APP_SETTINGS'])
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
-
 
 from models import *
 
@@ -57,7 +53,7 @@ def main():
         raise  BadRequest('Malformed json', status_code=400)
     sn = jsn.get('sn')
     type = jsn.get('type')
-    ctrl = db.session.query(Controller).filter(Controller.serial==sn, Controller.type==type).all()[0]
+    ctrl = db.session.query(Controller).filter(Controller.serial==sn, Controller.type==type).first()
     
     for msg_json in jsn['messages']:
         operation = msg_json.get('operation')
@@ -82,10 +78,10 @@ def main():
                 controller = Controller(serial=sn,type=type, fw=fw, conn_fw=conn_fw,active=mode, last_conn=int(time.time())  )
                 db.session.add(controller)
                 db.session.commit()
-                ctrl =  db.session.query(Controller).filter(Controller.serial==sn, Controller.type==type).all()[0]
+                ctrl =  db.session.query(Controller).filter(Controller.serial==sn, Controller.type==type).first()
 
             else:
-                controller = db.session.query.filter(Controller.serial==sn, Controller.type==type).all().first()
+                controller = db.session.query.filter(Controller.serial==sn, Controller.type==type).first()
                 controller.fw = fw
                 controller.conn_fw = conn_fw
                 controller.mode = mode
@@ -100,12 +96,12 @@ def main():
             print("PING FROM CONTROLLER %d" % sn )
             active = msg_json.get('active')
             mode = msg_json.get('mode')
-            controller = db.session.query(Controller).filter(Controller.serial==sn, Controller.type==type).all().first()
+            controller = db.session.query(Controller).filter(Controller.serial==sn, Controller.type==type).first()
             controller.mode = mode
             controller.last_conn = int(time.time())
             db.session.commit()  
            
-            if active != ctrl.get('active'):
+            if active != ctrl.active:
                 answer.append(json.loads('{"id":0,"operation":"set_active","active": %d}' % ctrl.get('active')))
                   
         elif operation == "check_access":
@@ -117,15 +113,13 @@ def main():
             answer.append(json.loads('{"id":%d,"operation":"check_access","granted":%d}' % (req_id,granted)))
 
         elif operation == "events":
-    
             print("EVENTS FROM CONTROLLER %d" % sn )
-            events = msg_json.get('events')
-            event_cnt = 0;
-            for event in events:
+            event_cnt = 0
+            for event in  msg_json.get('events'):
                 event_cnt += 1
                 ev_time=int(time.mktime(datetime.datetime.strptime(event.get('time'), "%Y-%m-%d %H:%M:%S").timetuple()))
-                event = Event(time=ev_time, event=event.get('event'), flags=event.get('flag'),card = event.get('card') )
-                db.session.add(event)
+                e = Event(time=ev_time, event=event.get('event'), flags=event.get('flag'),card = event.get('card'))
+                db.session.add(e)
             db.session.commit()
 
             print("EVENT_SUCCESS: %d" % event_cnt)
@@ -133,20 +127,15 @@ def main():
 
         else:
             print('UNKNOWN OERATION')
-    
     for task_jsn in db.session.query(Task.json).filter(Task.serial==sn, Task.type==type):
         if (len(json.dumps(answer))+len(task_jsn['json'])) > 1500:
             break
         task = json.loads(task_jsn['json'])
         task['id'] = task_jsn['id']
         answer.append(task)
-            
+    answer = '{"date":"%s","interval":%d,"messages":%s}' % (time.strftime("%Y-%m-%d %H:%M:%S"),ctrl.interval, json.dumps(answer))        
     db.session.close()
-    answer = '{"date":"%s","interval":%d,"messages":%s}' % (time.strftime("%Y-%m-%d %H:%M:%S"),ctrl.interval, json.dumps(answer))
     return jsonify(answer)
-
-        
-
 
 if __name__ == '__main__':
     app.run()
