@@ -81,7 +81,7 @@ def main():
                 ctrl =  db.session.query(Controller).filter(Controller.serial==sn, Controller.type==type).first()
 
             else:
-                controller = db.session.query.filter(Controller.serial==sn, Controller.type==type).first()
+                controller = db.session.query(Controller).filter(Controller.serial==sn, Controller.type==type).first()
                 controller.fw = fw
                 controller.conn_fw = conn_fw
                 controller.mode = mode
@@ -138,4 +138,4 @@ def main():
     return jsonify(answer)
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host='0.0.0.0')
