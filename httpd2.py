@@ -88,7 +88,8 @@ def main():
                 controller.last_conn = int(time.time()),
                 db.session.commit()
 
-            if active != ctrl.get('active'):
+
+            if active != ctrl.active:
                 answer.append(json.loads('{"id":0,"operation":"set_active","active": %d,"online": 1}' % ctrl.get('active')))
                  
         elif operation == "ping":
