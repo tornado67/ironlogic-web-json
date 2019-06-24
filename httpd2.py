@@ -90,7 +90,7 @@ def main():
 
 
             if active != ctrl.active:
-                answer.append(json.loads('{"id":0,"operation":"set_active","active": %d,"online": 1}' % ctrl.get('active')))
+                answer.append(json.loads('{"id":0,"operation":"set_active","active": %d,"online": 1}' % ctrl.active)))
                  
         elif operation == "ping":
 
@@ -103,7 +103,7 @@ def main():
             db.session.commit()  
            
             if active != ctrl.active:
-                answer.append(json.loads('{"id":0,"operation":"set_active","active": %d}' % ctrl.get('active')))
+                answer.append(json.loads('{"id":0,"operation":"set_active","active": %d}' % ctrl.active)))
                   
         elif operation == "check_access":
             
