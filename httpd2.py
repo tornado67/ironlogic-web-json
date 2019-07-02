@@ -136,7 +136,7 @@ def main():
         answer.append(task)
     answer = '{"date":"%s","interval":%d,"messages":%s}' % (time.strftime("%Y-%m-%d %H:%M:%S"),ctrl.interval, json.dumps(answer))        
     db.session.close()
-    return jsonify(answer)
+    return answer
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
