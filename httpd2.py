@@ -90,12 +90,10 @@ def main():
                 controller.last_conn = int(time.time()),
                 db.session.commit()
 
-
             if active != ctrl.active:
-                answer.append(json.loads('{"id":0,"operation":"set_active","active": %d,"online": 1}' % ctrl.active))
+                answer.append(json.loads('{"id":0,"operation":"set_active","active": %d,"online": 0}' % ctrl.active))
                  
         elif operation == "ping":
-
             print("PING FROM CONTROLLER %d" % sn , file=sys.stderr)
             active = msg_json.get('active')
             mode = msg_json.get('mode')
@@ -108,7 +106,6 @@ def main():
                 answer.append(json.loads('{"id":0,"operation":"set_active","active": %d}' % ctrl.active))
                   
         elif operation == "check_access":
-            
             card = msg_json.get('card')
             reader = msg_json.get('reader')
             print("CHECK ACCESS FROM CONTROLLER %d [%s on %d]" % (sn,card,reader),file=sys.stderr)
