@@ -28,20 +28,20 @@ class Controller(db.Model):
     fw = db.Column(db.String())
     conn_fw = db.Column(db.String())
     active = db.Column(db.Integer)
-    mode = db.Column(db.Integer)
+    mode = db.Column(db.Integer, default=0)
     last_conn = db.Column(db.Integer)
-    license = db.Column(db.String())
+    license = db.Column(db.String(), default='')
     interval = db.Column(db.Integer,nullable=False ,default=10)
 
-    
 
-    def __init__(self, serial, type, fw,conn_fw,active,mode, last_conn,interval, license):
+
+    def __init__(self, serial, type, fw,conn_fw,active, mode, last_conn, interval, license):
         self.serial = serial
         self.type = type
-        self.fw = fw 
-        self.fw_conn = fw_conn
+        self.fw = fw
+        self.conn_fw = conn_fw
         self.active =  active
-        self.mode = mode 
+        self.mode = mode
         self.last_conn = last_conn
         self.interval = interval
         self.license = license
