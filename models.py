@@ -1,10 +1,7 @@
 from httpd2 import db
-#from sqlalchemy.dialects.postgresql import JSON
-
 
 class Card(db.Model):
     __tablename__ = 'cards'
-
     id = db.Column(db.Integer, primary_key=True)
     card = db.Column(db.String())
     flags = db.Column(db.Integer)
@@ -18,10 +15,8 @@ class Card(db.Model):
     def __repr__(self):
         return '<id {}>'.format(self.id)
 
-
 class Controller(db.Model):
     __tablename__ = 'controllers'
-
     id = db.Column(db.Integer, primary_key=True)
     serial = db.Column(db.Integer)
     type = db.Column(db.String())
@@ -32,8 +27,6 @@ class Controller(db.Model):
     last_conn = db.Column(db.Integer)
     license = db.Column(db.String(), default='')
     interval = db.Column(db.Integer,nullable=False ,default=10)
-
-
 
     def __init__(self, serial, type, fw,conn_fw,active, mode, last_conn, interval, license):
         self.serial = serial
@@ -51,7 +44,6 @@ class Controller(db.Model):
 
 class Event (db.Model):
     __tablename__ = 'events'
-
     id = db.Column(db.Integer, primary_key=True)
     time  = db.Column(db.Integer, nullable=False )
     event = db.Column(db.Integer,nullable=False )
@@ -71,7 +63,6 @@ class Event (db.Model):
 
 class Task (db.Model):
     __tablename__ = 'tasks'
-
     id = db.Column(db.Integer, primary_key=True)
     serial  = db.Column(db.Integer)
     type = db.Column(db.Text)
