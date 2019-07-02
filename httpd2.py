@@ -81,15 +81,16 @@ def main():
                 ctrl =  db.session.query(Controller).filter(Controller.serial==sn, Controller.type==type).first()
 
             else:
-                controller = db.session.query.filter(Controller.serial==sn, Controller.type==type).first()
+                controller = db.session.query(Controller).filter(Controller.serial==sn, Controller.type==type).first()
                 controller.fw = fw
                 controller.conn_fw = conn_fw
                 controller.mode = mode
                 controller.last_conn = int(time.time()),
                 db.session.commit()
 
-            if active != ctrl.get('active'):
-                answer.append(json.loads('{"id":0,"operation":"set_active","active": %d,"online": 1}' % ctrl.get('active')))
+
+            if active != ctrl.active:
+                answer.append(json.loads('{"id":0,"operation":"set_active","active": %d,"online": 1}' % ctrl.active)))
                  
         elif operation == "ping":
 
@@ -102,7 +103,7 @@ def main():
             db.session.commit()  
            
             if active != ctrl.active:
-                answer.append(json.loads('{"id":0,"operation":"set_active","active": %d}' % ctrl.get('active')))
+                answer.append(json.loads('{"id":0,"operation":"set_active","active": %d}' % ctrl.active)))
                   
         elif operation == "check_access":
             
@@ -138,4 +139,4 @@ def main():
     return jsonify(answer)
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host='0.0.0.0')

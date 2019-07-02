@@ -1,4 +1,5 @@
-FROM ubuntu:18.04
+FROM python:3
 COPY . /app
-RUN make /app
-CMD python /app/app.py
+WORKDIR /app
+RUN pip install -r ./requirements.txt
+CMD [ "flask", "run", "-h", "0.0.0.0"  ]
