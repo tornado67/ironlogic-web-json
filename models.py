@@ -50,7 +50,7 @@ class Event (db.Model):
     card =   db.Column(db.Text, nullable=False)
     flags = db.Column(db.Integer)
     readable_time = db.Column(db.Text, nullable=True, default='')
-
+    
     def __init__(self, card, flags, time, event,readable_time):
         self.card = card
         self.flags = flags
