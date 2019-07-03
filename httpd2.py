@@ -40,7 +40,7 @@ def handle_bad_request(error):
 
 @app.route('/', methods = ['POST'])
 def main():
-    answer = []
+    answer = {}
     try:
         jsn =  request.get_json()
     except ValueError:
@@ -84,7 +84,10 @@ def main():
                 db.session.commit()
 
             if active != ctrl.active:
-                answer.append(json.loads('{"id":0,"operation":"set_active","active": %d,"online": 0}' % ctrl.active))
+                answer['id'] = '0'
+                answer['operation'] = 'set_active'
+                answer['active'] =  ctrl.active
+                answer['online'] = '0'
                  
         elif operation == "ping":
             print("PING FROM CONTROLLER %d" % sn , file=sys.stderr)
@@ -96,14 +99,18 @@ def main():
             db.session.commit()  
            
             if active != ctrl.active:
-                answer.append(json.loads('{"id":0,"operation":"set_active","active": %d}' % ctrl.active))
+                answer['id'] = '0'
+                answer['operation'] = 'set_active'
+                answer['active'] =  ctrl.active
                   
         elif operation == "check_access":
             card = msg_json.get('card')
             reader = msg_json.get('reader')
             print("CHECK ACCESS FROM CONTROLLER %d [%s on %d]" % (sn,card,reader),file=sys.stderr)
             granted = 1
-            answer.append(json.loads('{"id":%d,"operation":"check_access","granted":%d}' % (req_id,granted)))
+            answer['id'] = req_id
+            answer['operation'] = 'check_access'
+            answer['granted'] = granted
 
         elif operation == "events":
             print("EVENTS FROM CONTROLLER %d" % sn, file=sys.stderr)
@@ -114,10 +121,10 @@ def main():
                 e = Event( event=event.get('event'), flags=event.get('flag'),card = event.get('card'), time=ev_time)
                 db.session.add(e)
             db.session.commit()
-
             print("EVENT_SUCCESS: %d" % event_cnt,file=sys.stderr)
-            answer.append(json.loads('{"id":%d,"operation":"events","events_success":%d}' % (req_id,event_cnt)))
-
+            answer['id'] = req_id
+            answer['operation']  = 'events'
+            answer['events_success'] = event_cnt
         else:
             print('UNKNOWN OERATION',file=sys.stderr)
     for task_jsn in db.session.query(Task.json).filter(Task.serial==sn, Task.type==type):
@@ -125,11 +132,15 @@ def main():
             break
         task = json.loads(task_jsn['json'])
         task['id'] = task_jsn['id']
-        answer.append(task)
-    answer = '{"date":"%s","interval":%d,"messages":%s}' % (time.strftime("%Y-%m-%d %H:%M:%S"),ctrl.interval, json.dumps(answer))        
+        
+    answer.append(task)
+    answer['messages'] = json.dumps(answer) + json
+    answer['date'] = time.strftime("%Y-%m-%d %H:%M:%S")
+    answer['interval'] = ctrl.interval
+    
     db.session.close()
     print ("reponse:"+ answer,file=sys.stderr)
-    return answer
+    return json.dumps(answer)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
