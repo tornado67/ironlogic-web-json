@@ -47,16 +47,16 @@ class Controller(db.Model):
 class Event (db.Model):
     __tablename__ = 'events'
     id = db.Column(db.Integer, primary_key=True)
-    time  = db.Column(DateTime, default=datetime.datetime.utcnow)
+    time  = db.Column(DateTime)
     event = db.Column(db.Integer,nullable=False )
-    card =   db.Column(db.Text, nullable=False)
+    card =   db.Column(db.String(128), nullable=False)
     flags = db.Column(db.Integer)
     
-    def __init__(self, card, flags, event ):
+    def __init__(self, card, flags, event, time):
         offset = datetime.timezone(datetime.timedelta(hours=3))
         self.card = card
         self.flags = flags
-        self.time = datetime.datetime.now(offset)
+        self.time = time
         self.event =  event
 
     def __repr__(self):
