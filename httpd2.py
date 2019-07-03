@@ -45,9 +45,6 @@ def main():
     if request.method != 'POST':
         raise BadRequest('Not implemented', status_code=501)
     answer = []
-   
-    if int(request.headers.get('Content-Length') or 0) > MAX_CONTENT_LEN:
-        raise  BadRequest('Too long', status_code=400)
     try:
         jsn =  request.get_json()
     except ValueError:
