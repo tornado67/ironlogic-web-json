@@ -10,8 +10,6 @@ from flask import jsonify
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import sessionmaker
 
-MAX_CONTENT_LEN=2000
-
 app = Flask(__name__)
 app.config.from_object(os.environ['APP_SETTINGS'])
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -42,8 +40,6 @@ def handle_bad_request(error):
 
 @app.route('/', methods = ['POST'])
 def main():
-    if request.method != 'POST':
-        raise BadRequest('Not implemented', status_code=501)
     answer = []
     try:
         jsn =  request.get_json()
