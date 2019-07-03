@@ -117,8 +117,8 @@ def main():
             event_cnt = 0
             for event in  msg_json.get('events'):
                 event_cnt += 1
-                ev_time=int(time.mktime(datetime.datetime.strptime(event.get('time'), "%Y-%m-%d %H:%M:%S").timetuple()))
-                e = Event(time=ev_time, readable_time=event.get('time'), event=event.get('event'), flags=event.get('flag'),card = event.get('card'))
+                ev_time=datetime.datetime.strptime(event.get('time'), "%Y-%m-%d %H:%M:%S")
+                e = Event( event=event.get('event'), flags=event.get('flag'),card = event.get('card'), time=ev_time)
                 db.session.add(e)
             db.session.commit()
 

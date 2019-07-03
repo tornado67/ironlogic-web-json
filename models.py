@@ -1,5 +1,7 @@
 from httpd2 import db
 
+from sqlalchemy import DateTime
+
 class Card(db.Model):
     __tablename__ = 'cards'
     id = db.Column(db.Integer, primary_key=True)
@@ -45,18 +47,16 @@ class Controller(db.Model):
 class Event (db.Model):
     __tablename__ = 'events'
     id = db.Column(db.Integer, primary_key=True)
-    time  = db.Column(db.Integer, nullable=False )
+    time  = db.Column(DateTime)
     event = db.Column(db.Integer,nullable=False )
-    card =   db.Column(db.Text, nullable=False)
+    card =   db.Column(db.String(128), nullable=False)
     flags = db.Column(db.Integer)
-    readable_time = db.Column(db.Text, nullable=True, default='')
-    
-    def __init__(self, card, flags, time, event,readable_time):
+
+def __init__(self, card, flags, event, time):
         self.card = card
         self.flags = flags
         self.time = time
         self.event =  event
-        self.readable_time = readable_time 
 
     def __repr__(self):
         return '<id {}>'.format(self.id)
