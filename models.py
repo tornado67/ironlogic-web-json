@@ -1,5 +1,5 @@
 from httpd2 import db
-import datetime
+
 from sqlalchemy import DateTime
 
 class Card(db.Model):
@@ -53,7 +53,6 @@ class Event (db.Model):
     flags = db.Column(db.Integer)
     
     def __init__(self, card, flags, event, time):
-        offset = datetime.timezone(datetime.timedelta(hours=3))
         self.card = card
         self.flags = flags
         self.time = time
