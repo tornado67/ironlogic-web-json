@@ -40,7 +40,6 @@ def handle_bad_request(error):
 
 @app.route('/', methods = ['POST'])
 def main():
-    response = {}
     messages = []
     try:
         jsn =  request.get_json()
@@ -69,7 +68,6 @@ def main():
             active = msg_json.get('active')
             mode = msg_json.get('mode')
             if ctrl == None:
-
                 print('UNKNOWN CONTROLLER ADD TO BASE',file=sys.stderr)
                 controller = Controller(serial=sn,type=type, fw=fw, conn_fw=conn_fw,active=mode, last_conn=int(time.time())  )
                 db.session.add(controller)
@@ -149,13 +147,8 @@ def main():
         task = json.loads(task_jsn['json'])
         task['id'] = task_jsn['id']
         messages.append(task)
-
-    response['messages'] = json.dumps(messages)
-    response['date'] = time.strftime("%Y-%m-%d %H:%M:%S")
-    response['interval'] = ctrl.interval
-    
     db.session.close()
-    print ("reponse:"+ str (response),file=sys.stderr)
+    print ("reponse:"+ str (dict ( date=time.strftime("%Y-%m-%d %H:%M:%S"),interval=ctrl.interval, messages = messages )),file=sys.stderr)
     return json.dumps(
         dict (
             date=time.strftime("%Y-%m-%d %H:%M:%S"),
