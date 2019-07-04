@@ -52,7 +52,7 @@ class Event (db.Model):
     card =   db.Column(db.String(128), nullable=False)
     flags = db.Column(db.Integer)
 
-def __init__(self, card, flags, event, time):
+    def __init__(self, card, flags, event, time):
         self.card = card
         self.flags = flags
         self.time = time
