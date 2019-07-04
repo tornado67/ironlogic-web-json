@@ -29,7 +29,7 @@ class Controller(db.Model):
     last_conn = db.Column(db.Integer)
     license = db.Column(db.String(), default='')
     interval = db.Column(db.Integer,nullable=False ,default=10)
-
+    
     def __init__(self, serial, type, fw,conn_fw,active, mode, last_conn, interval, license):
         self.serial = serial
         self.type = type
