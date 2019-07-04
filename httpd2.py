@@ -40,7 +40,7 @@ def handle_bad_request(error):
 
 @app.route('/', methods = ['POST'])
 def main():
-    #answer = {}
+    response = {}
     messages = []
     try:
         jsn =  request.get_json()
@@ -136,26 +136,33 @@ def main():
             db.session.commit()
             print("EVENT_SUCCESS: %d" % event_cnt,file=sys.stderr)
             messages.append(
-               id = req_id,
-               operation = 'events',
-               events_success = event_cnt
+                dict(
+                    id = req_id,
+                    operation = 'events',
+                    events_success = event_cnt
+                )
             )
         else:
             print('UNKNOWN OERATION',file=sys.stderr)
+
     for task_jsn in db.session.query(Task.json).filter(Task.serial==sn, Task.type==type):
-        if (len(json.dumps(answer))+len(task_jsn['json'])) > 1500:
-            break
         task = json.loads(task_jsn['json'])
         task['id'] = task_jsn['id']
         messages.append(task)
 
-    messages['messages'] = json.dump(messages)
-    messages['date'] = time.strftime("%Y-%m-%d %H:%M:%S")
-    messages['interval'] = ctrl.interval
+    response['messages'] = json.dumps(messages)
+    response['date'] = time.strftime("%Y-%m-%d %H:%M:%S")
+    response['interval'] = ctrl.interval
     
     db.session.close()
-    print ("reponse:"+ answer,file=sys.stderr)
-    return json.dumps(answer)
+    print ("reponse:"+ response,file=sys.stderr)
+    return json.dumps(
+        dict (
+            messages = json.dumps(messages),
+            date = time.strftime("%Y-%m-%d %H:%M:%S"),
+            interval = ctrl.interval
+        )
+    )
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
