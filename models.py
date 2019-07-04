@@ -47,7 +47,7 @@ class Controller(db.Model):
 class Event (db.Model):
     __tablename__ = 'events'
     id = db.Column(db.Integer, primary_key=True)
-    time  = db.Column(DateTime)
+    time  = db.Column(DateTime(timezone=True))
     event = db.Column(db.Integer,nullable=False )
     card =   db.Column(db.String(128), nullable=False)
     flags = db.Column(db.Integer)
