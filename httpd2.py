@@ -40,7 +40,8 @@ def handle_bad_request(error):
 
 @app.route('/', methods = ['POST'])
 def main():
-    answer = {}
+    #answer = {}
+    messages = []
     try:
         jsn =  request.get_json()
     except ValueError:
@@ -84,10 +85,14 @@ def main():
                 db.session.commit()
 
             if active != ctrl.active:
-                answer['id'] = '0'
-                answer['operation'] = 'set_active'
-                answer['active'] =  ctrl.active
-                answer['online'] = '0'
+                messages.append(
+                    dict (
+                        id = '0',
+                        operation = 'set_active',
+                        active = ctrl.active,
+                        online = '0'
+                  )
+                )
                  
         elif operation == "ping":
             print("PING FROM CONTROLLER %d" % sn , file=sys.stderr)
@@ -99,18 +104,26 @@ def main():
             db.session.commit()  
            
             if active != ctrl.active:
-                answer['id'] = '0'
-                answer['operation'] = 'set_active'
-                answer['active'] =  ctrl.active
+                messages.append(
+                    dict (
+                        id='0',
+                        operation='set_active',
+                        active=ctrl.active
+                    )
+                )
                   
         elif operation == "check_access":
             card = msg_json.get('card')
             reader = msg_json.get('reader')
             print("CHECK ACCESS FROM CONTROLLER %d [%s on %d]" % (sn,card,reader),file=sys.stderr)
             granted = 1
-            answer['id'] = req_id
-            answer['operation'] = 'check_access'
-            answer['granted'] = granted
+            messages.append(
+                dict(
+                    id=req_id,
+                    operation='check_access',
+                    granted=granted
+                )
+            )
 
         elif operation == "events":
             print("EVENTS FROM CONTROLLER %d" % sn, file=sys.stderr)
@@ -122,9 +135,11 @@ def main():
                 db.session.add(e)
             db.session.commit()
             print("EVENT_SUCCESS: %d" % event_cnt,file=sys.stderr)
-            answer['id'] = req_id
-            answer['operation']  = 'events'
-            answer['events_success'] = event_cnt
+            messages.append(
+               id = req_id,
+               operation = 'events',
+               events_success = event_cnt
+            )
         else:
             print('UNKNOWN OERATION',file=sys.stderr)
     for task_jsn in db.session.query(Task.json).filter(Task.serial==sn, Task.type==type):
@@ -132,11 +147,11 @@ def main():
             break
         task = json.loads(task_jsn['json'])
         task['id'] = task_jsn['id']
-        
-    answer.append(task)
-    answer['messages'] = json.dumps(answer) + json
-    answer['date'] = time.strftime("%Y-%m-%d %H:%M:%S")
-    answer['interval'] = ctrl.interval
+        messages.append(task)
+
+    messages['messages'] = json.dump(messages)
+    messages['date'] = time.strftime("%Y-%m-%d %H:%M:%S")
+    messages['interval'] = ctrl.interval
     
     db.session.close()
     print ("reponse:"+ answer,file=sys.stderr)
