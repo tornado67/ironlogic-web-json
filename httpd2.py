@@ -1,5 +1,6 @@
 import os
 import sys
+import pytz
 import time
 import json
 import datetime 
@@ -8,7 +9,9 @@ from flask import Flask
 from flask import request
 from flask import jsonify
 from flask_sqlalchemy import SQLAlchemy
+
 from sqlalchemy.orm import sessionmaker
+from pytz import timezone
 
 MAX_CONTENT_LEN=2000
 
@@ -114,11 +117,12 @@ def main():
 
         elif operation == "events":
             print("EVENTS FROM CONTROLLER %d" % sn, file=sys.stderr)
+            tz = app.config.get('TZ')
             event_cnt = 0
             for event in  msg_json.get('events'):
                 event_cnt += 1
-                ev_time=int(time.mktime(datetime.datetime.strptime(event.get('time'), "%Y-%m-%d %H:%M:%S").timetuple()))
-                e = Event(time=ev_time, event=event.get('event'), flags=event.get('flag'),card = event.get('card'))
+                ev_time = pytz.timezone(tz).localize(datetime.datetime.strptime(event.get('time'), "%Y-%m-%d %H:%M:%S"))
+                e = Event( event=event.get('event'), flags=event.get('flag'),card = event.get('card'), time=ev_time)
                 db.session.add(e)
             db.session.commit()
 
