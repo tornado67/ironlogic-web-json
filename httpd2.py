@@ -155,12 +155,12 @@ def main():
     response['interval'] = ctrl.interval
     
     db.session.close()
-    print ("reponse:"+ response,file=sys.stderr)
+    print ("reponse:"+ str (response),file=sys.stderr)
     return json.dumps(
         dict (
-            messages = json.dumps(messages),
-            date = time.strftime("%Y-%m-%d %H:%M:%S"),
-            interval = ctrl.interval
+            date=time.strftime("%Y-%m-%d %H:%M:%S"),
+            interval=ctrl.interval,
+            messages = messages
         )
     )
 
