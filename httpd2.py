@@ -51,115 +51,116 @@ def main():
     print ("received request: " + str(jsn), file=sys.stderr)
     sn = jsn.get('sn')
     type = jsn.get('type')
-    ctrl = db.session.query(Controller).filter(Controller.serial==sn, Controller.type==type).first()
+    with db.session as session:
+        ctrl = session.query(Controller).filter(Controller.serial==sn, Controller.type==type).first()
     
-    for msg_json in jsn['messages']:
-        operation = msg_json.get('operation')
-        req_id = msg_json.get('id')
-        if operation == None:
-            if msg_json.get('success')== 1:
-                print("ANSWER TO %d FROM CONTROLLER %d" % (req_id,sn),file=sys.stderr )
-                db.session.query(Task).filter(id==req_id).delete()  
-                db.session.commit()
-            else:
-                print("UNKNOWN ANSWER:\n%s" % (msg_json),file=sys.stderr)
+        for msg_json in jsn['messages']:
+            operation = msg_json.get('operation')
+            req_id = msg_json.get('id')
+            if operation == None:
+               if msg_json.get('success')== 1:
+                    print("ANSWER TO %d FROM CONTROLLER %d" % (req_id,sn),file=sys.stderr )
+                    session.query(Task).filter(id==req_id).delete()
+                    session.commit()
+                else:
+                    print("UNKNOWN ANSWER:\n%s" % (msg_json),file=sys.stderr)
 
-        elif operation == 'power_on':
-            print('CONTROLLER %d POWER ON' % sn,file=sys.stderr)
-            fw = msg_json.get('fw')
-            conn_fw = msg_json.get('conn_fw')
-            active = msg_json.get('active')
-            mode = msg_json.get('mode')
-            if ctrl == None:
-                print('UNKNOWN CONTROLLER ADD TO BASE',file=sys.stderr)
-                controller = Controller(serial=sn,type=type, fw=fw, conn_fw=conn_fw,active=mode, last_conn=int(time.time())  )
-                db.session.add(controller)
-                db.session.commit()
-                ctrl =  db.session.query(Controller).filter(Controller.serial==sn, Controller.type==type).first()
+            elif operation == 'power_on':
+                print('CONTROLLER %d POWER ON' % sn,file=sys.stderr)
+                fw = msg_json.get('fw')
+                conn_fw = msg_json.get('conn_fw')
+                active = msg_json.get('active')
+                mode = msg_json.get('mode')
+                if ctrl == None:
+                    print('UNKNOWN CONTROLLER ADD TO BASE',file=sys.stderr)
+                    controller = Controller(serial=sn,type=type, fw=fw, conn_fw=conn_fw,active=mode, last_conn=int(time.time())  )
+                    session.add(controller)
+                    session.commit()
+                    ctrl =  session.query(Controller).filter(Controller.serial==sn, Controller.type==type).first()
 
-            else:
-                controller = db.session.query(Controller).filter(Controller.serial==sn, Controller.type==type).first()
-                controller.fw = fw
-                controller.conn_fw = conn_fw
-                controller.mode = mode
-                controller.last_conn = int(time.time()),
-                db.session.commit()
+                else:
+                    controller = session.query(Controller).filter(Controller.serial==sn, Controller.type==type).first()
+                    controller.fw = fw
+                    controller.conn_fw = conn_fw
+                    controller.mode = mode
+                    controller.last_conn = int(time.time()),
+                    session.commit()
 
-            if active != ctrl.active:
-                messages.append(
-                    dict (
-                        id = '0',
-                        operation = 'set_active',
-                        active = ctrl.active,
-                        online = '0'
-                  )
-                )
+                if active != ctrl.active:
+                    messages.append(
+                        dict (
+                            id = '0',
+                            operation = 'set_active',
+                            active = ctrl.active,
+                            online = '0'
+                         )
+                     )
                  
-        elif operation == "ping":
-            print("PING FROM CONTROLLER %d" % sn , file=sys.stderr)
-            active = msg_json.get('active')
-            mode = msg_json.get('mode')
-            controller = db.session.query(Controller).filter(Controller.serial==sn, Controller.type==type).first()
-            controller.mode = mode
-            controller.last_conn = int(time.time())
-            db.session.commit()  
+            elif operation == "ping":
+                print("PING FROM CONTROLLER %d" % sn , file=sys.stderr)
+                active = msg_json.get('active')
+                mode = msg_json.get('mode')
+                controller = session.query(Controller).filter(Controller.serial==sn, Controller.type==type).first()
+                controller.mode = mode
+                controller.last_conn = int(time.time())
+                session.commit()
            
-            if active != ctrl.active:
-                messages.append(
-                    dict (
-                        id='0',
-                        operation='set_active',
-                        active=ctrl.active
+                if active != ctrl.active:
+                    messages.append(
+                        dict (
+                            id='0',
+                            operation='set_active',
+                            active=ctrl.active
+                        )
                     )
-                )
                   
-        elif operation == "check_access":
-            card = msg_json.get('card')
-            reader = msg_json.get('reader')
-            print("CHECK ACCESS FROM CONTROLLER %d [%s on %d]" % (sn,card,reader),file=sys.stderr)
-            granted = 1
-            messages.append(
-                dict(
-                    id=req_id,
-                    operation='check_access',
-                    granted=granted
+            elif operation == "check_access":
+                card = msg_json.get('card')
+                reader = msg_json.get('reader')
+                print("CHECK ACCESS FROM CONTROLLER %d [%s on %d]" % (sn,card,reader),file=sys.stderr)
+                granted = 1
+                messages.append(
+                    dict(
+                        id=req_id,
+                        operation='check_access',
+                        granted=granted
+                     )
                 )
-            )
 
-        elif operation == "events":
-            print("EVENTS FROM CONTROLLER %d" % sn, file=sys.stderr)
-            tz = app.config.get('TZ')
-            event_cnt = 0
-            for event in  msg_json.get('events'):
-                event_cnt += 1
-                ev_time = pytz.timezone(tz).localize(datetime.datetime.strptime(event.get('time'), "%Y-%m-%d %H:%M:%S"))
-                e = Event( event=event.get('event'), flags=event.get('flag'),card = event.get('card'), time=ev_time)
-                db.session.add(e)
-            db.session.commit()
-            print("EVENT_SUCCESS: %d" % event_cnt,file=sys.stderr)
-            messages.append(
-                dict(
-                    id = req_id,
-                    operation = 'events',
-                    events_success = event_cnt
-                )
-            )
-        else:
-            print('UNKNOWN OERATION',file=sys.stderr)
+            elif operation == "events":
+                print("EVENTS FROM CONTROLLER %d" % sn, file=sys.stderr)
+                tz = app.config.get('TZ')
+                event_cnt = 0
+                for event in  msg_json.get('events'):
+                    event_cnt += 1
+                    ev_time = pytz.timezone(tz).localize(datetime.datetime.strptime(event.get('time'), "%Y-%m-%d %H:%M:%S"))
+                    e = Event( event=event.get('event'), flags=event.get('flag'),card = event.get('card'), time=ev_time)
+                    session.add(e)
+                session.commit()
+                print("EVENT_SUCCESS: %d" % event_cnt,file=sys.stderr)
+                messages.append(
+                    dict(
+                        id = req_id,
+                        operation = 'events',
+                        events_success = event_cnt
+                    )
+                 )
+            else:
+                print('UNKNOWN OERATION',file=sys.stderr)
 
-    for task_jsn in db.session.query(Task.json).filter(Task.serial==sn, Task.type==type):
-        task = json.loads(task_jsn['json'])
-        task['id'] = task_jsn['id']
-        messages.append(task)
-    db.session.close()
-    print ("reponse:"+ str (dict ( date=time.strftime("%Y-%m-%d %H:%M:%S"),interval=ctrl.interval, messages = messages )),file=sys.stderr)
-    return json.dumps(
-        dict (
-            date=time.strftime("%Y-%m-%d %H:%M:%S"),
-            interval=ctrl.interval,
-            messages = messages
+        for task_jsn in session.query(Task.json).filter(Task.serial==sn, Task.type==type):
+            task = json.loads(task_jsn['json'])
+            task['id'] = task_jsn['id']
+            messages.append(task)
+
+        print ("reponse:"+ str (dict ( date=time.strftime("%Y-%m-%d %H:%M:%S"),interval=ctrl.interval, messages = messages )),file=sys.stderr)
+        return json.dumps(
+            dict (
+                date=time.strftime("%Y-%m-%d %H:%M:%S"),
+                interval=ctrl.interval,
+                messages = messages
+            )
         )
-    )
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
