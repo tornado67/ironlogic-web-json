@@ -51,7 +51,7 @@ def main():
     print ("received request: " + str(jsn), file=sys.stderr)
     sn = jsn.get('sn')
     type = jsn.get('type')
-    with db.session as session:
+    with db.session.scope() as session:
         ctrl = session.query(Controller).filter(Controller.serial==sn, Controller.type==type).first()
     
         for msg_json in jsn['messages']:
