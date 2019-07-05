@@ -62,7 +62,7 @@ def main():
                     print("ANSWER TO %d FROM CONTROLLER %d" % (req_id,sn),file=sys.stderr )
                     session.query(Task).filter(id==req_id).delete()
                     session.commit()
-                else:
+               else:
                     print("UNKNOWN ANSWER:\n%s" % (msg_json),file=sys.stderr)
 
             elif operation == 'power_on':
