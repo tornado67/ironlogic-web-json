@@ -130,14 +130,13 @@ def main():
             elif operation == "events":
                 print("EVENTS FROM CONTROLLER %d" % sn, file=sys.stderr)
                 tz = app.config.get('TZ')
-                event_cnt = 0
-                for event in  msg_json.get('events'):
-                    event_cnt += 1
+                event_cnt = len(msg_json.get('events'))
+                for event in msg_json.get('events'):
                     ev_time = pytz.timezone(tz).localize(datetime.datetime.strptime(event.get('time'), "%Y-%m-%d %H:%M:%S"))
                     e = Event( event=event.get('event'), flags=event.get('flag'),card = event.get('card'), time=ev_time)
                     db.session.add(e)
                 db.session.commit()
-                print("EVENT_SUCCESS: %d" % event_cnt,file=sys.stderr)
+                print("EVENT_SUCCESS: %d" % event_cnt, file=sys.stderr)
                 messages.append(
                     dict(
                         id = req_id,
