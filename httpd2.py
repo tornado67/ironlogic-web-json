@@ -164,6 +164,3 @@ def main():
         raise  BadRequest('Genetal error', status_code=400)
     finally:
         db.session.close()
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0')
