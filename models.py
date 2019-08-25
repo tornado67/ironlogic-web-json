@@ -58,7 +58,7 @@ def __init__(self, card, flags, event, time):
         self.time = time
         self.event =  event
 
-    def __repr__(self):
+def __repr__(self):
         return '<id {}>'.format(self.id)
 
 class Task (db.Model):
