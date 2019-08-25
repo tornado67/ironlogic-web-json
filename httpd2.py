@@ -164,3 +164,4 @@ def main():
         raise  BadRequest('Genetal error', status_code=400)
     finally:
         db.session.close()
+        
