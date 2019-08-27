@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "iron-logick.fullname" . }}
+  labels:
+{{ include "iron-logick.labels" . | indent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "iron-logick.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "iron-logick.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: "FLASK_APP"
+              value: /app/httpd2.py
+            - name: TZ
+              value: Europe/Moscow
+            - name: APP_SETTINGS
+              value: config.DevelopmentConfig
+            - name: DATABASE_URL
+              value: postgresql+psycopg2://skud:skud@172.16.0.7/skud 
+              #              valueFrom:
+              #  secretKeyRef:
+              #    key: DATABASE_URL
+              #    name: {{ .Release.Name }}-creds
+            - name: LANG
+              value: en_US.UTF-8
+            - name: LC_ALL
+              value: en_US.UTF-8
+          ports:
+            - name: http
+              containerPort: 5000
+              protocol: TCP
+              #livenessProbe:
+              #httpGet:
+              #path: /
+              #port: http
+              #readinessProbe:
+              # httpGet:
+              #path: /
+              #port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}

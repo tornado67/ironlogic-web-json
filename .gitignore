@@ -3,3 +3,4 @@
 *.pem
 *.sql*
 .env
+venv
